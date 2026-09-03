@@ -253,7 +253,46 @@ caller's RLS) callable via `supabase.rpc(...)`:
 - `get_leaderboard(from, to, destination_id default null)`
 - `get_click_trend(from, to, destination_id default null, granularity default 'day')`
 
-## 8. Error handling
+## 8. Visual / UI design direction
+
+The owner-facing dashboard's actual screens will be built using the
+`impeccable:impeccable` skill at implementation time (not invoked during
+this design phase — brainstorming's terminal state is the plan, not the UI).
+This section records the visual direction so that work starts from a clear
+brief instead of a blank page.
+
+**Visual anchor:** `/Users/coke/Projects/qr-code` — an existing project in
+this workspace with an already-validated `.impeccable` design system,
+minimal and kawaii-leaning. Concrete tokens to start from (a starting point
+for `impeccable` to adapt into this product's own identity, not a
+verbatim-reuse mandate):
+
+- Pastel palette on a soft gradient background — blush pink / mint /
+  lavender / cream — with ink-purple body text (not pure black) and a
+  single saturated coral-pink accent reserved for primary actions
+- Large border radii everywhere (18–28px on cards, pill-shaped on buttons
+  and badges) — no sharp corners
+- Tinted shadows (soft pink-tinted, not grey — a grey shadow on a pastel
+  surface reads as dirt)
+- Rounded, friendly sans-serif type (Nunito/Mitr-style) and generous
+  whitespace via consistent card padding
+- A small mascot/character motif used sparingly (e.g. empty states,
+  onboarding) — optional here, at `impeccable`'s discretion
+
+**Adaptation for this product:** unlike the QR-code reference (a single-purpose
+tool), this is a KPI/analytics dashboard — leaderboards and trend charts
+must stay data-legible. Keep the pastel/kawaii language for chrome (cards,
+buttons, backgrounds, empty states) but pick a distinct, accessible
+categorical color set for chart series/data encoding (per the `dataviz`
+skill) rather than reusing decorative chrome pastels 1:1 as data colors —
+cute chrome, clear data.
+
+**Scope of this direction:** the owner dashboard only. The public
+`GET /r/:slug` redirect has no UI (a server-side 302) except its rare
+fallback page for an inactive/missing link, which should still carry the
+same visual language — small and on-brand, not a bare browser error page.
+
+## 9. Error handling
 
 - Redirect endpoint: invalid/inactive slug → friendly fallback page, never a
   raw error. Click-log failures never block the redirect (see §6).
@@ -263,7 +302,7 @@ caller's RLS) callable via `supabase.rpc(...)`:
 - Destination/employee names are not unique keys — only `slug` and
   `(destination_id, employee_id)` are constrained at the DB level.
 
-## 9. Testing approach
+## 10. Testing approach
 
 Priorities, in order of what's most trust-critical:
 
@@ -280,7 +319,7 @@ Priorities, in order of what's most trust-critical:
    leaderboard/chart/filter interactions; manual verification in-browser is
    acceptable for MVP given the low complexity of the UI logic.
 
-## 10. Tech stack summary
+## 11. Tech stack summary
 
 - **Runtime/hosting:** Cloudflare Workers (single Worker: static assets +
   `/r/:slug`)
@@ -294,7 +333,7 @@ Priorities, in order of what's most trust-critical:
 - **Frontend:** React (Vite), built as static assets served by the same
   Worker
 
-## 11. Open questions for a future iteration (not blocking MVP)
+## 12. Open questions for a future iteration (not blocking MVP)
 
 - Anti-fraud heuristics on `clicks` (rate-limit by IP/device within a time
   window) — data is already captured, so this can be added later without a
