@@ -333,7 +333,50 @@ Priorities, in order of what's most trust-critical:
 - **Frontend:** React (Vite), built as static assets served by the same
   Worker
 
-## 12. Open questions for a future iteration (not blocking MVP)
+## 12. Environment variables & secrets
+
+Two separate example files are needed, because the frontend and the Worker
+backend load configuration differently — a Cloudflare Workers quirk worth
+calling out explicitly so it isn't a surprise during setup. Both example
+files are committed to git as documentation; the real `.env` / `.dev.vars`
+are gitignored.
+
+- **Frontend (Vite/React)** reads a standard `.env` file at build time;
+  only `VITE_`-prefixed vars reach client code (they end up in the shipped
+  JS bundle, so nothing secret belongs here — this is fine because RLS,
+  not key secrecy, is what actually protects tenant data).
+- **Worker (Hono, `/r/:slug`)** does *not* read `.env` at runtime.
+  Wrangler's local-dev equivalent is `.dev.vars` (auto-loaded by
+  `wrangler dev`); in production, secrets are pushed with
+  `wrangler secret put <NAME>` and stored encrypted by Cloudflare, not in
+  any file at all.
+
+**`.env.example`** (frontend, safe to expose client-side):
+```
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+```
+
+**`.dev.vars.example`** (Worker, server-only):
+```
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+```
+`SUPABASE_SERVICE_ROLE_KEY` is the one genuinely sensitive value in the
+system — it bypasses RLS and is read only inside the `/r/:slug` handler to
+write a click row. It must never reach the frontend bundle.
+
+Note there is no raw Postgres `DATABASE_URL` in the app's own runtime
+config — by design (§4), both the Worker and the frontend talk to Supabase
+over its API (`supabase-js`), never a direct `postgres://` connection.
+A direct DB connection string only comes into play for schema migrations
+(Supabase CLI, e.g. `supabase db push`), which needs its own credentials
+(`SUPABASE_ACCESS_TOKEN` + project ref, or a direct connection string from
+the Supabase dashboard) — that's developer/CI tooling, not application
+config, and should be documented separately (e.g. as CI secrets) when the
+implementation plan sets up migrations.
+
+## 13. Open questions for a future iteration (not blocking MVP)
 
 - Anti-fraud heuristics on `clicks` (rate-limit by IP/device within a time
   window) — data is already captured, so this can be added later without a
