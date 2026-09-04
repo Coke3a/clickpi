@@ -1,0 +1,19 @@
+.leaderboard {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+.leaderboard__row {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.leaderboard__bar {
+  grid-column: 1 / -1;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--chart-series-1);
+}
