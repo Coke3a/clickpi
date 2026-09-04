@@ -128,4 +128,61 @@ describe('row-level security isolation', () => {
     })
     expect(error).not.toBeNull()
   })
+
+  it('lets an owner delete their own store\'s clicks but not another store\'s', async () => {
+    const admin = serviceClient()
+    const ownerA = await createAuthedUser()
+    const ownerB = await createAuthedUser()
+
+    const { data: storeA } = await admin
+      .from('stores')
+      .insert({ name: 'Store D', owner_user_id: ownerA.userId })
+      .select()
+      .single()
+    cleanupStoreIds.push(storeA!.id)
+
+    const { data: storeB } = await admin
+      .from('stores')
+      .insert({ name: 'Store E', owner_user_id: ownerB.userId })
+      .select()
+      .single()
+    cleanupStoreIds.push(storeB!.id)
+
+    const { data: destinationA } = await admin
+      .from('destinations')
+      .insert({ store_id: storeA!.id, label: 'Google Maps', target_url: 'https://maps.google.com/x' })
+      .select()
+      .single()
+
+    const { data: employeeA } = await admin
+      .from('employees')
+      .insert({ store_id: storeA!.id, name: 'Ploy' })
+      .select()
+      .single()
+
+    const { data: linkA } = await admin
+      .from('links')
+      .select('*')
+      .eq('destination_id', destinationA!.id)
+      .eq('employee_id', employeeA!.id)
+      .single()
+
+    await admin.from('clicks').insert([
+      { link_id: linkA!.id, destination_id: destinationA!.id, employee_id: employeeA!.id, store_id: storeA!.id },
+      { link_id: linkA!.id, destination_id: destinationA!.id, employee_id: employeeA!.id, store_id: storeA!.id },
+    ])
+
+    const { error: deleteByOtherOwnerError } = await ownerB.client
+      .from('clicks')
+      .delete()
+      .eq('store_id', storeA!.id)
+    expect(deleteByOtherOwnerError).toBeNull()
+    const { data: stillThere } = await admin.from('clicks').select('*').eq('store_id', storeA!.id)
+    expect(stillThere).toHaveLength(2)
+
+    const { error: deleteByOwnerError } = await ownerA.client.from('clicks').delete().eq('store_id', storeA!.id)
+    expect(deleteByOwnerError).toBeNull()
+    const { data: afterOwnerDelete } = await admin.from('clicks').select('*').eq('store_id', storeA!.id)
+    expect(afterOwnerDelete).toHaveLength(0)
+  })
 })

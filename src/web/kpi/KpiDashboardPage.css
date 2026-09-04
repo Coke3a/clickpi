@@ -3,6 +3,12 @@
   gap: var(--sp-5);
 }
 
+.kpi-page__heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
 .kpi-page__heading h2 {
   margin-bottom: var(--sp-1);
 }
@@ -10,6 +16,23 @@
   margin: 0;
   color: var(--c-ink-secondary);
   font-size: var(--fs-sm);
+}
+.kpi-page__delete {
+  flex: none;
+  background: transparent;
+  color: var(--c-error);
+  border: 2px solid var(--c-error);
+  box-shadow: none;
+}
+.kpi-page__delete:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--c-error) 10%, transparent);
+  transform: none;
+}
+
+@media (max-width: 640px) {
+  .kpi-page__heading {
+    flex-direction: column;
+  }
 }
 
 .kpi-filters {

@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { Leaderboard, type LeaderboardRow } from './Leaderboard'
 import { TrendChart, type TrendPoint } from './TrendChart'
-import { lastNDaysRange } from './dateRangePresets'
+import { lastNDaysRange, customDateRange } from './dateRangePresets'
+import { deleteClickHistory } from './deleteClickHistory'
+import { DeleteHistoryModal } from './DeleteHistoryModal'
 import { toCsv, downloadCsv } from '../lib/csv'
 import './KpiDashboardPage.css'
 
@@ -15,9 +17,12 @@ export function KpiDashboardPage({ storeId }: { storeId: number }) {
   const [destinations, setDestinations] = useState<Destination[]>([])
   const [destinationId, setDestinationId] = useState<number | null>(null)
   const [range, setRange] = useState(() => lastNDaysRange(30))
+  const [customFrom, setCustomFrom] = useState('')
+  const [customTo, setCustomTo] = useState('')
   const [leaderboard, setLeaderboard] = useState<LeaderboardRow[]>([])
   const [trend, setTrend] = useState<TrendPoint[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
   useEffect(() => {
     supabase
@@ -27,9 +32,9 @@ export function KpiDashboardPage({ storeId }: { storeId: number }) {
       .then(({ data }) => setDestinations((data ?? []) as Destination[]))
   }, [storeId])
 
-  useEffect(() => {
+  const loadKpiData = useCallback(() => {
     setLoading(true)
-    Promise.all([
+    return Promise.all([
       supabase.rpc('get_leaderboard', { p_from: range.from, p_to: range.to, p_destination_id: destinationId }),
       supabase.rpc('get_click_trend', {
         p_from: range.from,
@@ -44,16 +49,41 @@ export function KpiDashboardPage({ storeId }: { storeId: number }) {
     })
   }, [range, destinationId])
 
+  useEffect(() => {
+    loadKpiData()
+  }, [loadKpiData])
+
   function handleExport() {
     const csv = toCsv(leaderboard as unknown as Record<string, string | number>[])
     downloadCsv('kpi-leaderboard.csv', csv)
   }
 
+  function handleCustomFromChange(value: string) {
+    setCustomFrom(value)
+    if (value && customTo) setRange(customDateRange(value, customTo))
+  }
+
+  function handleCustomToChange(value: string) {
+    setCustomTo(value)
+    if (customFrom && value) setRange(customDateRange(customFrom, value))
+  }
+
+  async function handleDeleteConfirm(deleteRange?: { from: string; to: string }) {
+    await deleteClickHistory(storeId, deleteRange)
+    setDeleteModalOpen(false)
+    await loadKpiData()
+  }
+
   return (
     <section className="kpi-page">
       <div className="kpi-page__heading">
-        <h2>ภาพรวม KPI</h2>
-        <p className="kpi-page__subtitle">ผลงานพนักงานและแนวโน้มการคลิกลิงก์ในช่วงเวลาที่เลือก</p>
+        <div>
+          <h2>ภาพรวม KPI</h2>
+          <p className="kpi-page__subtitle">ผลงานพนักงานและแนวโน้มการคลิกลิงก์ในช่วงเวลาที่เลือก</p>
+        </div>
+        <button type="button" className="kpi-page__delete" onClick={() => setDeleteModalOpen(true)}>
+          ลบประวัติ KPI
+        </button>
       </div>
 
       <div className="card kpi-filters">
@@ -64,6 +94,14 @@ export function KpiDashboardPage({ storeId }: { storeId: number }) {
             <option value={30}>30 วันล่าสุด</option>
             <option value={90}>90 วันล่าสุด</option>
           </select>
+        </label>
+        <label>
+          ตั้งแต่วันที่
+          <input type="date" value={customFrom} onChange={(e) => handleCustomFromChange(e.target.value)} />
+        </label>
+        <label>
+          ถึงวันที่
+          <input type="date" value={customTo} onChange={(e) => handleCustomToChange(e.target.value)} />
         </label>
         <label>
           ปลายทาง
@@ -83,6 +121,10 @@ export function KpiDashboardPage({ storeId }: { storeId: number }) {
           ส่งออก CSV
         </button>
       </div>
+
+      {deleteModalOpen && (
+        <DeleteHistoryModal onClose={() => setDeleteModalOpen(false)} onConfirm={handleDeleteConfirm} />
+      )}
 
       {loading ? (
         <p className="kpi-page__loading">กำลังโหลด...</p>

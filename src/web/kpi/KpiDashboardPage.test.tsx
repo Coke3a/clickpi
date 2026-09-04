@@ -1,11 +1,24 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { KpiDashboardPage } from './KpiDashboardPage'
 import { supabase } from '../lib/supabaseClient'
 
 vi.mock('../lib/supabaseClient', () => ({ supabase: { from: vi.fn(), rpc: vi.fn() } }))
 
+function makeDeleteBuilder(result: { error: { message: string } | null } = { error: null }) {
+  const builder = {
+    eq: vi.fn(() => builder),
+    gte: vi.fn(() => builder),
+    lt: vi.fn(() => builder),
+    then: (resolve: (value: typeof result) => unknown) => resolve(result),
+  }
+  return builder
+}
+
 describe('KpiDashboardPage', () => {
+  let deleteBuilder: ReturnType<typeof makeDeleteBuilder>
+  let deleteFn: ReturnType<typeof vi.fn>
+
   beforeEach(() => {
     vi.mocked(supabase.from).mockReset()
     vi.mocked(supabase.rpc).mockReset()
@@ -14,7 +27,13 @@ describe('KpiDashboardPage', () => {
       select: vi.fn(() => destinationsBuilder),
       eq: vi.fn(() => Promise.resolve({ data: [{ id: 1, label: 'Google Maps' }], error: null })),
     }
-    vi.mocked(supabase.from).mockReturnValue(destinationsBuilder as never)
+    deleteBuilder = makeDeleteBuilder()
+    deleteFn = vi.fn(() => deleteBuilder)
+
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      if (table === 'clicks') return { delete: deleteFn } as never
+      return destinationsBuilder as never
+    })
 
     vi.mocked(supabase.rpc).mockImplementation((fnName: string) => {
       if (fnName === 'get_leaderboard') {
@@ -74,5 +93,49 @@ describe('KpiDashboardPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'ส่งออก CSV' }))
     expect(clickSpy).toHaveBeenCalled()
+  })
+
+  it('applies a custom date range typed into the from/to pickers', async () => {
+    render(<KpiDashboardPage storeId={10} />)
+    await screen.findByText('Somchai')
+    vi.mocked(supabase.rpc).mockClear()
+
+    fireEvent.change(screen.getByLabelText('ตั้งแต่วันที่'), { target: { value: '2026-09-01' } })
+    fireEvent.change(screen.getByLabelText('ถึงวันที่'), { target: { value: '2026-09-03' } })
+
+    await screen.findByText('Somchai')
+    expect(supabase.rpc).toHaveBeenCalledWith(
+      'get_leaderboard',
+      expect.objectContaining({ p_from: '2026-08-31T17:00:00.000Z', p_to: '2026-09-03T17:00:00.000Z' })
+    )
+  })
+
+  it('opens the delete-history modal, deletes all clicks for the store, and reloads the KPI data', async () => {
+    render(<KpiDashboardPage storeId={10} />)
+    await screen.findByText('Somchai')
+    const rpcCallsBeforeDelete = vi.mocked(supabase.rpc).mock.calls.length
+
+    fireEvent.click(screen.getByRole('button', { name: 'ลบประวัติ KPI' }))
+    expect(screen.getByRole('dialog', { name: 'ลบประวัติ KPI' })).toBeInTheDocument()
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'ยืนยันลบ' }))
+    })
+
+    expect(deleteFn).toHaveBeenCalled()
+    expect(deleteBuilder.eq).toHaveBeenCalledWith('store_id', 10)
+    expect(vi.mocked(supabase.rpc).mock.calls.length).toBeGreaterThan(rpcCallsBeforeDelete)
+    expect(screen.queryByRole('dialog', { name: 'ลบประวัติ KPI' })).not.toBeInTheDocument()
+  })
+
+  it('closes the delete-history modal without deleting when cancelled', async () => {
+    render(<KpiDashboardPage storeId={10} />)
+    await screen.findByText('Somchai')
+
+    fireEvent.click(screen.getByRole('button', { name: 'ลบประวัติ KPI' }))
+    fireEvent.click(screen.getByRole('button', { name: 'ยกเลิก' }))
+
+    expect(deleteFn).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog', { name: 'ลบประวัติ KPI' })).not.toBeInTheDocument()
   })
 })

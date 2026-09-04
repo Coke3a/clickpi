@@ -1,0 +1,69 @@
+.delete-history-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--c-ink) 45%, transparent);
+  display: grid;
+  place-items: center;
+  padding: var(--sp-4);
+  z-index: 100;
+}
+
+.delete-history-modal {
+  width: min(420px, 100%);
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.delete-history-modal__warning {
+  color: var(--c-error);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+
+.delete-history-modal__scope {
+  display: grid;
+  gap: var(--sp-2);
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.delete-history-modal__scope label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-weight: 500;
+  color: var(--c-ink);
+}
+.delete-history-modal__scope input {
+  width: auto;
+}
+
+.delete-history-modal__range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+.delete-history-modal__range label {
+  flex: 1 1 160px;
+}
+
+.delete-history-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-3);
+}
+
+.delete-history-modal__cancel {
+  background: var(--c-inactive-bg);
+  color: var(--c-ink);
+}
+.delete-history-modal__cancel:hover:not(:disabled) {
+  background: var(--c-border);
+}
+
+.delete-history-modal__confirm {
+  background: var(--c-error);
+}
+.delete-history-modal__confirm:hover:not(:disabled) {
+  background: #a8232f;
+}
