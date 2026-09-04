@@ -5,6 +5,10 @@ import { LoginPage } from './auth/LoginPage'
 import { useStore } from './store/useStore'
 import { CreateStorePage } from './store/CreateStorePage'
 import { DashboardLayout } from './layout/DashboardLayout'
+import { DestinationsPage } from './destinations/DestinationsPage'
+import { EmployeesPage } from './employees/EmployeesPage'
+import { LinksPage } from './links/LinksPage'
+import { KpiDashboardPage } from './kpi/KpiDashboardPage'
 
 function StoreArea() {
   const { store, loading, setStore } = useStore()
@@ -13,7 +17,10 @@ function StoreArea() {
   return (
     <Routes>
       <Route element={<DashboardLayout />}>
-        <Route index element={<p>ยินดีต้อนรับสู่ {store.name}</p>} />
+        <Route index element={<KpiDashboardPage storeId={store.id} />} />
+        <Route path="destinations" element={<DestinationsPage storeId={store.id} />} />
+        <Route path="employees" element={<EmployeesPage storeId={store.id} />} />
+        <Route path="links" element={<LinksPage storeId={store.id} />} />
       </Route>
     </Routes>
   )

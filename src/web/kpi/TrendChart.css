@@ -1,0 +1,6 @@
+.trend-chart {
+  width: 100%;
+  height: auto;
+  background: var(--chart-surface);
+  border-radius: var(--r-md);
+}

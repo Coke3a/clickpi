@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { Leaderboard, type LeaderboardRow } from './Leaderboard'
+import { TrendChart, type TrendPoint } from './TrendChart'
 import { lastNDaysRange } from './dateRangePresets'
+import { toCsv, downloadCsv } from '../lib/csv'
 
 interface Destination {
   id: number
@@ -13,6 +15,7 @@ export function KpiDashboardPage({ storeId }: { storeId: number }) {
   const [destinationId, setDestinationId] = useState<number | null>(null)
   const [range, setRange] = useState(() => lastNDaysRange(30))
   const [leaderboard, setLeaderboard] = useState<LeaderboardRow[]>([])
+  const [trend, setTrend] = useState<TrendPoint[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -25,13 +28,25 @@ export function KpiDashboardPage({ storeId }: { storeId: number }) {
 
   useEffect(() => {
     setLoading(true)
-    supabase
-      .rpc('get_leaderboard', { p_from: range.from, p_to: range.to, p_destination_id: destinationId })
-      .then(({ data }) => {
-        setLeaderboard((data ?? []) as LeaderboardRow[])
-        setLoading(false)
-      })
+    Promise.all([
+      supabase.rpc('get_leaderboard', { p_from: range.from, p_to: range.to, p_destination_id: destinationId }),
+      supabase.rpc('get_click_trend', {
+        p_from: range.from,
+        p_to: range.to,
+        p_destination_id: destinationId,
+        p_granularity: 'day',
+      }),
+    ]).then(([leaderboardRes, trendRes]) => {
+      setLeaderboard((leaderboardRes.data ?? []) as LeaderboardRow[])
+      setTrend((trendRes.data ?? []) as TrendPoint[])
+      setLoading(false)
+    })
   }, [range, destinationId])
+
+  function handleExport() {
+    const csv = toCsv(leaderboard as unknown as Record<string, string | number>[])
+    downloadCsv('kpi-leaderboard.csv', csv)
+  }
 
   return (
     <section>
@@ -59,9 +74,19 @@ export function KpiDashboardPage({ storeId }: { storeId: number }) {
             ))}
           </select>
         </label>
+        <button type="button" onClick={handleExport}>
+          ส่งออก CSV
+        </button>
       </div>
 
-      {loading ? <p>กำลังโหลด...</p> : <Leaderboard rows={leaderboard} />}
+      {loading ? (
+        <p>กำลังโหลด...</p>
+      ) : (
+        <>
+          <TrendChart points={trend} />
+          <Leaderboard rows={leaderboard} />
+        </>
+      )}
     </section>
   )
 }
