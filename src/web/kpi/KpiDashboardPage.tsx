@@ -4,6 +4,7 @@ import { Leaderboard, type LeaderboardRow } from './Leaderboard'
 import { TrendChart, type TrendPoint } from './TrendChart'
 import { lastNDaysRange } from './dateRangePresets'
 import { toCsv, downloadCsv } from '../lib/csv'
+import './KpiDashboardPage.css'
 
 interface Destination {
   id: number
@@ -49,9 +50,13 @@ export function KpiDashboardPage({ storeId }: { storeId: number }) {
   }
 
   return (
-    <section>
-      <h2>ภาพรวม KPI</h2>
-      <div className="kpi-filters">
+    <section className="kpi-page">
+      <div className="kpi-page__heading">
+        <h2>ภาพรวม KPI</h2>
+        <p className="kpi-page__subtitle">ผลงานพนักงานและแนวโน้มการคลิกลิงก์ในช่วงเวลาที่เลือก</p>
+      </div>
+
+      <div className="card kpi-filters">
         <label>
           ช่วงเวลา
           <select onChange={(e) => setRange(lastNDaysRange(Number(e.target.value)))} defaultValue={30}>
@@ -74,18 +79,24 @@ export function KpiDashboardPage({ storeId }: { storeId: number }) {
             ))}
           </select>
         </label>
-        <button type="button" onClick={handleExport}>
+        <button type="button" className="kpi-filters__export" onClick={handleExport}>
           ส่งออก CSV
         </button>
       </div>
 
       {loading ? (
-        <p>กำลังโหลด...</p>
+        <p className="kpi-page__loading">กำลังโหลด...</p>
       ) : (
-        <>
-          <TrendChart points={trend} />
-          <Leaderboard rows={leaderboard} />
-        </>
+        <div className="kpi-page__grid">
+          <div className="card kpi-page__panel">
+            <h3>แนวโน้มจำนวนคลิก</h3>
+            <TrendChart points={trend} />
+          </div>
+          <div className="card kpi-page__panel">
+            <h3>อันดับพนักงาน</h3>
+            <Leaderboard rows={leaderboard} />
+          </div>
+        </div>
       )}
     </section>
   )

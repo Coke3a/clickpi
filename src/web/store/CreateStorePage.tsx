@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { Mascot } from '../components/Mascot'
 import type { Store } from './useStore'
+import '../auth/AuthLayout.css'
 
 export function CreateStorePage({ onCreated }: { onCreated: (store: Store) => void }) {
   const [name, setName] = useState('')
@@ -26,17 +28,23 @@ export function CreateStorePage({ onCreated }: { onCreated: (store: Store) => vo
   }
 
   return (
-    <div className="login-page">
-      <form className="card login-page__form" onSubmit={handleSubmit}>
-        <h1>สร้างร้านค้าของคุณ</h1>
-        <label>
-          ชื่อร้าน
-          <input value={name} onChange={(e) => setName(e.target.value)} required />
-        </label>
+    <div className="auth-shell">
+      <form className="card auth-card" onSubmit={handleSubmit}>
+        <Mascot mood="happy" />
+        <h1 className="auth-card__title">สร้างร้านค้าของคุณ</h1>
+        <p className="auth-card__subtitle">ตั้งชื่อร้าน แล้วเริ่มติดตาม KPI ของทีมได้ทันที</p>
+        <div className="auth-card__fields">
+          <label>
+            ชื่อร้าน
+            <input value={name} onChange={(e) => setName(e.target.value)} required />
+          </label>
+        </div>
         {error && <p role="alert">{error}</p>}
-        <button type="submit" disabled={submitting}>
-          {submitting ? 'กำลังสร้าง...' : 'สร้างร้านค้า'}
-        </button>
+        <div className="auth-card__actions">
+          <button type="submit" className="auth-card__submit" disabled={submitting}>
+            {submitting ? 'กำลังสร้าง...' : 'สร้างร้านค้า'}
+          </button>
+        </div>
       </form>
     </div>
   )

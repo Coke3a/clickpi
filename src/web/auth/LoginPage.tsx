@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import './LoginPage.css'
+import { Mascot } from '../components/Mascot'
+import './AuthLayout.css'
 
 type Mode = 'sign-in' | 'sign-up'
 
@@ -31,33 +32,35 @@ export function LoginPage() {
   }
 
   return (
-    <div className="login-page">
-      <form className="card login-page__form" onSubmit={handleSubmit}>
-        <h1>{mode === 'sign-in' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}</h1>
-        <label>
-          อีเมล
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </label>
-        <label>
-          รหัสผ่าน
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </label>
-        {error && (
-          <p role="alert" className="login-page__error">
-            {error}
-          </p>
-        )}
+    <div className="auth-shell">
+      <form className="card auth-card" onSubmit={handleSubmit}>
+        <Mascot mood={error ? 'idle' : 'happy'} />
+        <h1 className="auth-card__title">{mode === 'sign-in' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}</h1>
+        <p className="auth-card__subtitle">PAMM Map KPI — แดชบอร์ดติดตามผลงานทีมของคุณ</p>
+        <div className="auth-card__fields">
+          <label>
+            อีเมล
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </label>
+          <label>
+            รหัสผ่าน
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          </label>
+        </div>
+        {error && <p role="alert">{error}</p>}
         {info && <p role="status">{info}</p>}
-        <button type="submit" disabled={submitting}>
-          {submitting ? 'กำลังดำเนินการ...' : mode === 'sign-in' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}
-        </button>
-        <button
-          type="button"
-          className="login-page__toggle"
-          onClick={() => setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in')}
-        >
-          {mode === 'sign-in' ? 'ยังไม่มีบัญชี? สมัครสมาชิก' : 'มีบัญชีแล้ว? เข้าสู่ระบบ'}
-        </button>
+        <div className="auth-card__actions">
+          <button type="submit" className="auth-card__submit" disabled={submitting}>
+            {submitting ? 'กำลังดำเนินการ...' : mode === 'sign-in' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}
+          </button>
+          <button
+            type="button"
+            className="auth-card__toggle"
+            onClick={() => setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in')}
+          >
+            {mode === 'sign-in' ? 'ยังไม่มีบัญชี? สมัครสมาชิก' : 'มีบัญชีแล้ว? เข้าสู่ระบบ'}
+          </button>
+        </div>
       </form>
     </div>
   )

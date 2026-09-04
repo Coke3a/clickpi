@@ -12,7 +12,7 @@ import { KpiDashboardPage } from './kpi/KpiDashboardPage'
 
 function StoreArea() {
   const { store, loading, setStore } = useStore()
-  if (loading) return <p>กำลังโหลด...</p>
+  if (loading) return <p className="app-loading">กำลังโหลด...</p>
   if (!store) return <CreateStorePage onCreated={setStore} />
   return (
     <Routes>
@@ -28,7 +28,7 @@ function StoreArea() {
 
 function AppRoutes() {
   const { loading } = useAuth()
-  if (loading) return <p>กำลังโหลด...</p>
+  if (loading) return <p className="app-loading">กำลังโหลด...</p>
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />

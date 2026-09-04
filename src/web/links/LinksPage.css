@@ -1,0 +1,37 @@
+.links-table__wrap {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.links-table {
+  min-width: 480px;
+}
+.links-table th:first-child,
+.links-table td:first-child {
+  padding-left: var(--sp-5);
+}
+.links-table th:last-child,
+.links-table td:last-child {
+  padding-right: var(--sp-5);
+}
+
+.links-table__copy {
+  background: var(--c-surface);
+  color: var(--c-ink);
+  border: 1px solid var(--c-border);
+  box-shadow: none;
+  font-size: var(--fs-sm);
+  padding: var(--sp-2) var(--sp-4);
+}
+.links-table__copy:hover:not(:disabled) {
+  background: var(--c-nav-bg);
+  transform: none;
+}
+.links-table__copy--copied {
+  background: var(--c-success-bg);
+  color: var(--c-success);
+  border-color: transparent;
+}
+.links-table__copy--copied:hover {
+  background: var(--c-success-bg);
+}

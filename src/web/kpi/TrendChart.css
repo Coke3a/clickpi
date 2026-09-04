@@ -4,3 +4,17 @@
   background: var(--chart-surface);
   border-radius: var(--r-md);
 }
+
+.trend-chart-empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-6) 0;
+  text-align: center;
+  color: var(--c-ink-secondary);
+  background: var(--chart-surface);
+  border-radius: var(--r-md);
+}
+.trend-chart-empty p {
+  margin: 0;
+}
