@@ -55,15 +55,14 @@ describe('row-level security isolation', () => {
       .select()
       .single()
 
+    // The link_lifecycle_triggers migration already auto-created this link
+    // the instant `employee` was inserted above; fetch it instead of
+    // manually inserting a duplicate for the same (destination, employee) pair.
     const { data: link } = await admin
       .from('links')
-      .insert({
-        store_id: storeA!.id,
-        destination_id: destination!.id,
-        employee_id: employee!.id,
-        slug: 'rls-test-slug-1',
-      })
-      .select()
+      .select('*')
+      .eq('destination_id', destination!.id)
+      .eq('employee_id', employee!.id)
       .single()
 
     await admin.from('clicks').insert({

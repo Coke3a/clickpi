@@ -40,19 +40,14 @@ describe('core schema constraints', () => {
       .select()
       .single()
 
-    const { error: firstLinkError } = await admin.from('links').insert({
-      store_id: store!.id,
-      destination_id: destination!.id,
-      employee_id: employee!.id,
-      slug: 'schema-test-slug-1',
-    })
-    expect(firstLinkError).toBeNull()
-
+    // The link_lifecycle_triggers migration already auto-created a link for
+    // this (destination, employee) pair the instant `employee` was inserted
+    // above, so a manual insert for the same pair is the duplicate.
     const { error: duplicateLinkError } = await admin.from('links').insert({
       store_id: store!.id,
       destination_id: destination!.id,
       employee_id: employee!.id,
-      slug: 'schema-test-slug-2',
+      slug: 'schema-test-slug-1',
     })
     expect(duplicateLinkError).not.toBeNull()
     expect(duplicateLinkError!.message).toMatch(/duplicate key value/i)
