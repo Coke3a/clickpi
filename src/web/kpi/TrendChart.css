@@ -5,6 +5,12 @@
   border-radius: var(--r-md);
 }
 
+.trend-chart__axis-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  fill: var(--chart-ink-muted);
+}
+
 .trend-chart-empty {
   display: grid;
   justify-items: center;

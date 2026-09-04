@@ -70,7 +70,7 @@ describe('KpiDashboardPage', () => {
 
     render(<KpiDashboardPage storeId={10} />)
 
-    expect(await screen.findByRole('img', { name: 'แนวโน้มจำนวนคลิกตามเวลา' })).toBeInTheDocument()
+    expect(await screen.findByRole('img', { name: 'แนวโน้มจำนวนคลิกตามเวลา (เวลาประเทศไทย)' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'ส่งออก CSV' }))
     expect(clickSpy).toHaveBeenCalled()

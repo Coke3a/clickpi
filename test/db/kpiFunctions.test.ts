@@ -106,6 +106,58 @@ describe('KPI RPC functions', () => {
     expect(trend![0].click_count).toBe(2)
   })
 
+  it('buckets by day using Asia/Bangkok time, not UTC', async () => {
+    const admin = serviceClient()
+    const owner = await createAuthedUser()
+
+    const { data: store } = await admin
+      .from('stores')
+      .insert({ name: 'KPI Timezone Store', owner_user_id: owner.userId })
+      .select()
+      .single()
+    cleanupStoreIds.push(store!.id)
+
+    const { data: destination } = await admin
+      .from('destinations')
+      .insert({ store_id: store!.id, label: 'TikTok', target_url: 'https://tiktok.com/4' })
+      .select()
+      .single()
+    const { data: employee } = await admin
+      .from('employees')
+      .insert({ store_id: store!.id, name: 'Timezone Tester' })
+      .select()
+      .single()
+    const { data: link } = await admin
+      .from('links')
+      .select('*')
+      .eq('destination_id', destination!.id)
+      .eq('employee_id', employee!.id)
+      .single()
+
+    // 2026-09-04T18:00:00Z is 2026-09-05T01:00:00+07:00 in Bangkok. A
+    // UTC-based date_trunc would bucket this under Sept 4; the correct
+    // Bangkok-local bucket is midnight Sept 5 Bangkok, i.e. 2026-09-04T17:00:00Z.
+    await admin.from('clicks').insert({
+      link_id: link!.id,
+      employee_id: employee!.id,
+      destination_id: destination!.id,
+      store_id: store!.id,
+      clicked_at: '2026-09-04T18:00:00Z',
+    })
+
+    const { data: trend, error } = await owner.client.rpc('get_click_trend', {
+      p_from: '2026-01-01T00:00:00Z',
+      p_to: '2027-01-01T00:00:00Z',
+      p_destination_id: destination!.id,
+      p_granularity: 'day',
+    })
+
+    expect(error).toBeNull()
+    expect(trend).toHaveLength(1)
+    expect(new Date(trend![0].bucket).getTime()).toBe(new Date('2026-09-04T17:00:00Z').getTime())
+    expect(trend![0].click_count).toBe(1)
+  })
+
   it('rejects an invalid granularity', async () => {
     const owner = await createAuthedUser()
     const { error } = await owner.client.rpc('get_click_trend', {
