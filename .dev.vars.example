@@ -1,2 +1,13 @@
+# Worker (Hono, `/r/:slug`) secrets — server-only, never expose these
+# client-side or put them in a VITE_-prefixed variable.
+#
+# Local dev: copy this file to .dev.vars (gitignored) and fill in values
+#   from `npx supabase status -o env` -> API_URL / SERVICE_ROLE_KEY.
+# Production: don't put these in a file at all. Set them as Worker secrets:
+#   npx wrangler secret put SUPABASE_URL
+#   npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+# Values come from the Supabase Dashboard -> Project Settings -> API ->
+#   "Project URL" and the "service_role" key (bypasses RLS — keep secret).
+
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
