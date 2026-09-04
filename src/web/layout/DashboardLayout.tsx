@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { supabase } from '../lib/supabaseClient'
 import './DashboardLayout.css'
 
 export function DashboardLayout() {
@@ -38,6 +39,9 @@ export function DashboardLayout() {
             ลิงก์
           </NavLink>
         </nav>
+        <button type="button" className="app__sign-out" onClick={() => supabase.auth.signOut()}>
+          ออกจากระบบ
+        </button>
       </header>
       <main className="app__content">
         <Outlet />

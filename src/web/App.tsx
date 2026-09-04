@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth/AuthProvider'
 import { RequireAuth } from './auth/RequireAuth'
+import { RedirectIfAuthenticated } from './auth/RedirectIfAuthenticated'
 import { LoginPage } from './auth/LoginPage'
 import { useStore } from './store/useStore'
 import { CreateStorePage } from './store/CreateStorePage'
@@ -11,8 +12,9 @@ import { LinksPage } from './links/LinksPage'
 import { KpiDashboardPage } from './kpi/KpiDashboardPage'
 
 function StoreArea() {
-  const { store, loading, setStore } = useStore()
+  const { store, loading, error, setStore } = useStore()
   if (loading) return <p className="app-loading">กำลังโหลด...</p>
+  if (error) return <p role="alert">เกิดข้อผิดพลาด: {error}</p>
   if (!store) return <CreateStorePage onCreated={setStore} />
   return (
     <Routes>
@@ -31,7 +33,9 @@ function AppRoutes() {
   if (loading) return <p className="app-loading">กำลังโหลด...</p>
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route element={<RedirectIfAuthenticated />}>
+        <Route path="/login" element={<LoginPage />} />
+      </Route>
       <Route element={<RequireAuth />}>
         <Route path="/*" element={<StoreArea />} />
       </Route>

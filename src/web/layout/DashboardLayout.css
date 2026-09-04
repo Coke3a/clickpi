@@ -67,6 +67,21 @@
   color: #fff;
 }
 
+.app__sign-out {
+  background: transparent;
+  color: var(--c-ink-secondary);
+  box-shadow: none;
+  padding: var(--sp-2) var(--sp-4);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.app__sign-out:hover:not(:disabled) {
+  background: var(--c-nav-bg);
+  color: var(--c-ink);
+  transform: none;
+  box-shadow: none;
+}
+
 .app__content {
   max-width: 1080px;
   margin: 0 auto;
