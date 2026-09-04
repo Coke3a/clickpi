@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "bounce-easing",
+        "value": "cubic-bezier(0.34, 1.2, 0.64, 1)",
+        "createdAt": "2026-09-04T01:52:47.829Z",
+        "reason": "Plan's Global Constraints instruct a literal port of /Users/coke/Projects/qr-code's validated kawaii-pastel tokens.css as the intentional starting point (Task 14 does the real design-polish pass later); bounce/spring easing is a deliberate part of that reference project's playful aesthetic, not an accidental choice"
+      }
+    ]
+  }
+}
