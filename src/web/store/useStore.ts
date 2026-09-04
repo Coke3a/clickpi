@@ -10,6 +10,7 @@ export interface Store {
 export function useStore() {
   const [store, setStore] = useState<Store | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -17,9 +18,10 @@ export function useStore() {
       .from('stores')
       .select('*')
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error: fetchError }) => {
         if (!cancelled) {
-          setStore(data as Store | null)
+          if (fetchError) setError(fetchError.message)
+          else setStore(data as Store | null)
           setLoading(false)
         }
       })
@@ -28,5 +30,5 @@ export function useStore() {
     }
   }, [])
 
-  return { store, loading, setStore }
+  return { store, loading, error, setStore }
 }

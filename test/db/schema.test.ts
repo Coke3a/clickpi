@@ -52,4 +52,28 @@ describe('core schema constraints', () => {
     expect(duplicateLinkError).not.toBeNull()
     expect(duplicateLinkError!.message).toMatch(/duplicate key value/i)
   })
+
+  it('prevents a single owner from having more than one store', async () => {
+    const admin = serviceClient()
+
+    const { data: authUser } = await admin.auth.admin.createUser({
+      email: `schema-test-unique-${Date.now()}@example.com`,
+      password: 'test-password-123!',
+      email_confirm: true,
+    })
+
+    const { data: firstStore, error: firstError } = await admin
+      .from('stores')
+      .insert({ name: 'First Store', owner_user_id: authUser!.user!.id })
+      .select()
+      .single()
+    expect(firstError).toBeNull()
+    cleanupStoreIds.push(firstStore!.id)
+
+    const { error: secondError } = await admin
+      .from('stores')
+      .insert({ name: 'Second Store', owner_user_id: authUser!.user!.id })
+    expect(secondError).not.toBeNull()
+    expect(secondError!.message).toMatch(/duplicate key value/i)
+  })
 })
