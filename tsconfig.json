@@ -11,7 +11,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node", "@testing-library/jest-dom", "vitest/globals"]
   },
   "include": ["src/web", "vite.config.ts", "vitest.config.ts", "test"]
 }
