@@ -1,0 +1,36 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg-page);
+  background-attachment: fixed;
+  color: var(--c-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  background: var(--c-surface);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  box-shadow: var(--shadow-soft);
+}
+
+button {
+  border-radius: var(--r-pill);
+  border: none;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--c-accent);
+  color: white;
+  cursor: pointer;
+  font-family: inherit;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
