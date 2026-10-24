@@ -1,6 +1,8 @@
 {
   "name": "pamm-map-kpi",
   "main": "src/worker/index.ts",
+  "workers_dev": true,
+  "routes": [{ "pattern": "clickpi.cokenova.com", "custom_domain": true }],
   "compatibility_date": "2026-09-01",
   "assets": {
     "directory": "./dist/client",
