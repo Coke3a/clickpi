@@ -14,7 +14,7 @@ export function DashboardLayout() {
             />
             <circle cx="12" cy="9.6" r="3.4" fill="var(--c-surface)" />
           </svg>
-          <h1>PAMM Map KPI</h1>
+          <h1>Click KPI</h1>
         </div>
         <nav className="app__nav">
           <NavLink to="/" end className={({ isActive }) => (isActive ? 'app__nav-link app__nav-link--active' : 'app__nav-link')}>

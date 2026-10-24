@@ -36,7 +36,7 @@ export function LoginPage() {
       <form className="card auth-card" onSubmit={handleSubmit}>
         <Mascot mood={error ? 'idle' : 'happy'} />
         <h1 className="auth-card__title">{mode === 'sign-in' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}</h1>
-        <p className="auth-card__subtitle">PAMM Map KPI — แดชบอร์ดติดตามผลงานทีมของคุณ</p>
+        <p className="auth-card__subtitle">Click KPI — แดชบอร์ดติดตามผลงานทีมของคุณ</p>
         <div className="auth-card__fields">
           <label>
             อีเมล
