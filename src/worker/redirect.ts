@@ -1,5 +1,6 @@
 import type { Context } from 'hono'
 import type { LinksRepository } from './linksRepository'
+import { resolveClickClientId, serializeClickClientIdCookie } from './clickClientId'
 
 const FALLBACK_HTML = `<!doctype html>
 <html lang="th"><head><meta charset="utf-8"><title>ลิงก์นี้ไม่พร้อมใช้งาน</title></head>
@@ -17,6 +18,11 @@ export function makeRedirectHandler(repository: LinksRepository) {
       return c.html(FALLBACK_HTML, 404)
     }
 
+    const { clientId, isNew } = resolveClickClientId(c.req.header('cookie'))
+    if (isNew) {
+      c.header('Set-Cookie', serializeClickClientIdCookie(clientId))
+    }
+
     c.executionCtx.waitUntil(
       repository
         .recordClick({
@@ -27,6 +33,7 @@ export function makeRedirectHandler(repository: LinksRepository) {
           ipAddress: (c.req.header('cf-connecting-ip') ?? null) as string | null,
           userAgent: (c.req.header('user-agent') ?? null) as string | null,
           referrer: (c.req.header('referer') ?? null) as string | null,
+          clientId,
         })
         .catch((err) => console.error('click insert failed', err))
     )

@@ -14,6 +14,7 @@ export interface RecordClickInput {
   ipAddress: string | null
   userAgent: string | null
   referrer: string | null
+  clientId: string
 }
 
 export interface LinksRepository {

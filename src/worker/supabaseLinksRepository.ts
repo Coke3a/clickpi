@@ -41,6 +41,7 @@ export function createSupabaseLinksRepository(url: string, serviceRoleKey: strin
         ip_address: input.ipAddress,
         user_agent: input.userAgent,
         referrer: input.referrer,
+        client_id: input.clientId,
       })
       if (error) throw error
     },

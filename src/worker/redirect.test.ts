@@ -2,11 +2,25 @@ import { describe, it, expect, vi } from 'vitest'
 import { Hono } from 'hono'
 import { makeRedirectHandler } from './redirect'
 import type { LinksRepository } from './linksRepository'
+import { CLICK_CLIENT_ID_COOKIE } from './clickClientId'
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const EXISTING_CLIENT_ID = '11111111-1111-4111-8111-111111111111'
 
 function appWithRepository(repository: LinksRepository) {
   const app = new Hono()
   app.get('/r/:slug', makeRedirectHandler(repository))
   return app
+}
+
+function activeLink() {
+  return {
+    id: 1,
+    storeId: 10,
+    employeeId: 100,
+    destinationId: 1000,
+    targetUrl: 'https://maps.google.com/example',
+  }
 }
 
 function fakeExecutionCtx(): ExecutionContext {
@@ -65,5 +79,38 @@ describe('GET /r/:slug', () => {
 
     expect(res.status).toBe(302)
     expect(res.headers.get('location')).toBe('https://maps.google.com/example')
+  })
+
+  it('sets a fresh client-id cookie and records the click under it when the request has none', async () => {
+    const repository: LinksRepository = {
+      findActiveLinkBySlug: vi.fn().mockResolvedValue(activeLink()),
+      recordClick: vi.fn().mockResolvedValue(undefined),
+    }
+    const app = appWithRepository(repository)
+
+    const res = await app.request('/r/abc123', undefined, {}, fakeExecutionCtx())
+
+    const setCookie = res.headers.get('set-cookie')
+    expect(setCookie).toMatch(new RegExp(`^${CLICK_CLIENT_ID_COOKIE}=${UUID_RE.source.slice(1, -1)}`))
+    const clientId = setCookie!.split(';')[0].split('=')[1]
+    expect(repository.recordClick).toHaveBeenCalledWith(expect.objectContaining({ clientId }))
+  })
+
+  it('reuses the client id from an existing cookie without setting a new one', async () => {
+    const repository: LinksRepository = {
+      findActiveLinkBySlug: vi.fn().mockResolvedValue(activeLink()),
+      recordClick: vi.fn().mockResolvedValue(undefined),
+    }
+    const app = appWithRepository(repository)
+
+    const res = await app.request(
+      '/r/abc123',
+      { headers: { Cookie: `${CLICK_CLIENT_ID_COOKIE}=${EXISTING_CLIENT_ID}` } },
+      {},
+      fakeExecutionCtx()
+    )
+
+    expect(res.headers.get('set-cookie')).toBeNull()
+    expect(repository.recordClick).toHaveBeenCalledWith(expect.objectContaining({ clientId: EXISTING_CLIENT_ID }))
   })
 })
