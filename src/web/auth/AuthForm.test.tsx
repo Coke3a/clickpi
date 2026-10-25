@@ -1,13 +1,19 @@
+import { useState } from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { LoginPage } from './LoginPage'
+import { AuthForm, type AuthMode } from './AuthForm'
 import { supabase } from '../lib/supabaseClient'
 
 vi.mock('../lib/supabaseClient', () => ({
   supabase: { auth: { signInWithPassword: vi.fn(), signUp: vi.fn() } },
 }))
 
-describe('LoginPage', () => {
+function Harness() {
+  const [mode, setMode] = useState<AuthMode>('sign-in')
+  return <AuthForm mode={mode} onModeChange={setMode} />
+}
+
+describe('AuthForm', () => {
   beforeEach(() => {
     vi.mocked(supabase.auth.signInWithPassword).mockReset()
     vi.mocked(supabase.auth.signUp).mockReset()
@@ -19,7 +25,7 @@ describe('LoginPage', () => {
       error: null,
     } as never)
 
-    render(<LoginPage />)
+    render(<Harness />)
     fireEvent.change(screen.getByLabelText('อีเมล'), { target: { value: 'owner@example.com' } })
     fireEvent.change(screen.getByLabelText('รหัสผ่าน'), { target: { value: 'secret123' } })
     fireEvent.click(screen.getByRole('button', { name: 'เข้าสู่ระบบ' }))
@@ -38,7 +44,7 @@ describe('LoginPage', () => {
       error: { message: 'Invalid login credentials' },
     } as never)
 
-    render(<LoginPage />)
+    render(<Harness />)
     fireEvent.change(screen.getByLabelText('อีเมล'), { target: { value: 'owner@example.com' } })
     fireEvent.change(screen.getByLabelText('รหัสผ่าน'), { target: { value: 'wrong' } })
     fireEvent.click(screen.getByRole('button', { name: 'เข้าสู่ระบบ' }))
@@ -46,14 +52,15 @@ describe('LoginPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid login credentials')
   })
 
-  it('toggles to sign-up mode and calls signUp', async () => {
+  it('switches to sign-up via the tab and calls signUp', async () => {
     vi.mocked(supabase.auth.signUp).mockResolvedValue({
       data: { session: null, user: null },
       error: null,
     } as never)
 
-    render(<LoginPage />)
-    fireEvent.click(screen.getByRole('button', { name: 'ยังไม่มีบัญชี? สมัครสมาชิก' }))
+    render(<Harness />)
+    fireEvent.click(screen.getByRole('tab', { name: 'สมัครฟรี' }))
+    expect(screen.getByRole('tab', { name: 'สมัครฟรี' })).toHaveAttribute('aria-selected', 'true')
     fireEvent.change(screen.getByLabelText('อีเมล'), { target: { value: 'new-owner@example.com' } })
     fireEvent.change(screen.getByLabelText('รหัสผ่าน'), { target: { value: 'secret123' } })
     fireEvent.click(screen.getByRole('button', { name: 'สมัครสมาชิก' }))

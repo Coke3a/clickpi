@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth/AuthProvider'
 import { RequireAuth } from './auth/RequireAuth'
 import { RedirectIfAuthenticated } from './auth/RedirectIfAuthenticated'
-import { LoginPage } from './auth/LoginPage'
+import { LandingPage } from './landing/LandingPage'
 import { useStore } from './store/useStore'
 import { CreateStorePage } from './store/CreateStorePage'
 import { DashboardLayout } from './layout/DashboardLayout'
@@ -34,10 +34,10 @@ function AppRoutes() {
   return (
     <Routes>
       <Route element={<RedirectIfAuthenticated />}>
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<LandingPage />} />
       </Route>
       <Route element={<RequireAuth />}>
-        <Route path="/*" element={<StoreArea />} />
+        <Route path="/app/*" element={<StoreArea />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

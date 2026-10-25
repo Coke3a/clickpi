@@ -13,9 +13,9 @@ function renderAt(path: string) {
     <MemoryRouter initialEntries={[path]}>
       <Routes>
         <Route element={<RedirectIfAuthenticated />}>
-          <Route path="/login" element={<p>login form</p>} />
+          <Route path="/" element={<p>landing</p>} />
         </Route>
-        <Route path="/" element={<p>dashboard</p>} />
+        <Route path="/app" element={<p>dashboard</p>} />
       </Routes>
     </MemoryRouter>
   )
@@ -25,18 +25,18 @@ describe('RedirectIfAuthenticated', () => {
   it('shows a loading state while the session is still resolving', () => {
     vi.mocked(useAuth).mockReturnValue({ session: null, loading: true })
 
-    renderAt('/login')
+    renderAt('/')
 
     expect(screen.getByText('กำลังโหลด...')).toBeInTheDocument()
   })
 
-  it('redirects to / when a session already exists', () => {
+  it('redirects to /app when a session already exists', () => {
     vi.mocked(useAuth).mockReturnValue({
       session: { access_token: 'x' } as never,
       loading: false,
     })
 
-    renderAt('/login')
+    renderAt('/')
 
     expect(screen.getByText('dashboard')).toBeInTheDocument()
   })
@@ -44,8 +44,8 @@ describe('RedirectIfAuthenticated', () => {
   it('renders the guarded route when there is no session', () => {
     vi.mocked(useAuth).mockReturnValue({ session: null, loading: false })
 
-    renderAt('/login')
+    renderAt('/')
 
-    expect(screen.getByText('login form')).toBeInTheDocument()
+    expect(screen.getByText('landing')).toBeInTheDocument()
   })
 })

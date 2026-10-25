@@ -17,23 +17,23 @@ export function DashboardLayout() {
           <h1>ClicKPI</h1>
         </div>
         <nav className="app__nav">
-          <NavLink to="/" end className={({ isActive }) => (isActive ? 'app__nav-link app__nav-link--active' : 'app__nav-link')}>
+          <NavLink to="/app" end className={({ isActive }) => (isActive ? 'app__nav-link app__nav-link--active' : 'app__nav-link')}>
             ภาพรวม KPI
           </NavLink>
           <NavLink
-            to="/destinations"
+            to="/app/destinations"
             className={({ isActive }) => (isActive ? 'app__nav-link app__nav-link--active' : 'app__nav-link')}
           >
             ปลายทาง
           </NavLink>
           <NavLink
-            to="/employees"
+            to="/app/employees"
             className={({ isActive }) => (isActive ? 'app__nav-link app__nav-link--active' : 'app__nav-link')}
           >
             พนักงาน
           </NavLink>
           <NavLink
-            to="/links"
+            to="/app/links"
             className={({ isActive }) => (isActive ? 'app__nav-link app__nav-link--active' : 'app__nav-link')}
           >
             ลิงก์
